@@ -1,47 +1,122 @@
 <script lang="ts">
-  import svelteLogo from './assets/svelte.svg'
-  import viteLogo from '/vite.svg'
-  import Counter from './lib/Counter.svelte'
+  import { getCurrency } from "./api/getCurrency"
+
+  let rightCurrency = 'USD';
+  let leftCurrency = 'USD';
+  let rightValue: number;
+  let leftValue: number;
+  let rates: {string: number};
+  
+  getCurrency()
+    .then((res) => {
+      rates = res
+    });
+
+  function changeRightValue(e: Event) {
+    // @ts-ignore
+    rightValue = e.target.value * (rates[leftCurrency] / rates[rightCurrency])
+  }
+
+  function changeLeftValue(e: Event) {
+    // @ts-ignore
+    leftValue = e.target.value * (rates[rightCurrency] / rates[leftCurrency])
+  }
+  
 </script>
 
-<main>
-  <div>
-    <a href="https://vitejs.dev" target="_blank" rel="noreferrer">
-      <img src={viteLogo} class="logo" alt="Vite Logo" />
-    </a>
-    <a href="https://svelte.dev" target="_blank" rel="noreferrer">
-      <img src={svelteLogo} class="logo svelte" alt="Svelte Logo" />
-    </a>
+<main class="card">
+  <h1>Exchange rate</h1>
+
+  <div class="selection-wrapper">
+    <select bind:value={rightCurrency} class="selection">
+      {#if rates}
+      {#each Object.entries(rates) as [key, some]}
+        <option value={key}>{key}</option>
+      {/each}
+      {/if}
+    </select>
+
+    <select bind:value={leftCurrency} class="selection">
+      {#if rates}
+      {#each Object.entries(rates) as [key, value]}
+        <option value={key}>{key}</option>
+      {/each}
+      {/if}
+    </select>
   </div>
-  <h1>Vite + Svelte</h1>
-
-  <div class="card">
-    <Counter />
+  
+  <div class="input-wrapper">
+    <input
+      on:input={changeRightValue}
+      value={leftValue}
+      type="number"
+      class="input"
+      disabled={!rightCurrency}
+    >
+    <input
+      on:input={changeLeftValue}
+      value={rightValue}
+      type="number"
+      class="input"
+      disabled={!leftCurrency}
+    >
   </div>
-
-  <p>
-    Check out <a href="https://github.com/sveltejs/kit#readme" target="_blank" rel="noreferrer">SvelteKit</a>, the official Svelte app framework powered by Vite!
-  </p>
-
-  <p class="read-the-docs">
-    Click on the Vite and Svelte logos to learn more
-  </p>
 </main>
 
 <style>
-  .logo {
-    height: 6em;
+
+.card {
+    width: 500px;
+    height:300px;
+    background-color: rgba(0, 122, 200, 1);
+    border-radius: 45px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    align-items: center;
     padding: 1.5em;
-    will-change: filter;
-    transition: filter 300ms;
   }
-  .logo:hover {
-    filter: drop-shadow(0 0 2em #646cffaa);
+
+  .selection-wrapper {
+    width: 51%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    outline: none;
   }
-  .logo.svelte:hover {
-    filter: drop-shadow(0 0 2em #ff3e00aa);
+
+  .selection {
+    background-color: #242424;
+    padding: 1em;
+    height: 65px;
+    width: 100px;
+    border: none;
+    border-radius: 18px;
+    color: white;
+    font-size: 17px;
   }
-  .read-the-docs {
-    color: #888;
+  .selection:focus {
+    outline: none;
+  }
+
+  .input-wrapper {
+    width: 80%;
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .input {
+    background-color: #242424;
+    padding: 1em;
+    height: 30px;
+    width: 140px;
+    border: none;
+    border-radius: 18px;
+    color: white;
+    font-size: 17px;
+  }
+
+  .input:focus {
+    outline: none;
   }
 </style>
